@@ -1,0 +1,37 @@
+<!-- Axero Raw HTML widget – edit this file -->
+<!-- Deploy to Page Builder is working when you see the message below -->
+<div style="padding: 1rem; background: #e8f4f8; border: 1px solid #0d6efd; border-radius: 6px; font-family: sans-serif; margin-bottom: 1rem;">
+  <strong style="color: #0d6efd;">✓ Page Builder deploy is working</strong>
+  <p style="margin: 0.5rem 0 0; color: #333;">This content was deployed from your project. Edit <code>index.html</code> and run <code>npm run push</code> to update.</p>
+</div>
+
+<div style="padding: 1rem; background: #e8ffe8; border: 1px solid #198754; border-radius: 6px; font-family: sans-serif;">
+  <strong style="color: #198754;">deployment confirmation</strong>
+  <p style="margin: 0.5rem 0 0; color: #222;">
+    Last deployed at:
+    <span id="deployment-confirmation-timestamp"></span>
+  </p>
+</div>
+
+<script>
+  (function () {
+    var span = document.getElementById("deployment-confirmation-timestamp");
+    if (!span) return;
+
+    var now = new Date();
+    var parts = [
+      now.getFullYear(),
+      String(now.getMonth() + 1).padStart(2, "0"),
+      String(now.getDate()).padStart(2, "0")
+    ];
+    var dateString = parts.join("-");
+
+    var t = [
+      String(now.getHours()).padStart(2, "0"),
+      String(now.getMinutes()).padStart(2, "0"),
+      String(now.getSeconds()).padStart(2, "0")
+    ].join(":");
+
+    span.textContent = dateString + " " + t;
+  })();
+</script>
