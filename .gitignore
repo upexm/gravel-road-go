@@ -1,0 +1,12 @@
+# Dependencies (if someone runs npm install in this repo)
+node_modules/
+
+# Local env - do not commit
+.env.axero
+.env.axero.*
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store

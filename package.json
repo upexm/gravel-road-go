@@ -1,0 +1,16 @@
+{
+  "name": "axero-pagebuilder-deploy",
+  "version": "1.0.0",
+  "description": "Deploy HTML to Axero Page Builder Raw HTML widget — scripts and Cursor skills",
+  "private": true,
+  "scripts": {
+    "axero:setup": "node scripts/setup-axero-env.js",
+    "axero:setup-widgets": "node scripts/setup-axero-env.js --widgets-only",
+    "axero:push": "node scripts/push-page.js",
+    "axero:list-widgets": "node scripts/list-widget-ids.js",
+    "axero:discover": "node scripts/discover-pagebuilder-api.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}

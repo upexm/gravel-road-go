@@ -1,0 +1,17 @@
+---
+description: Use Axero Page Builder and API docs for all Axero and Page Builder work
+alwaysApply: true
+---
+
+# Axero Page Builder – required docs
+
+When working on Axero Page Builder, Raw HTML widgets, or Axero intranet code:
+
+**Always consult:**
+- `Docs/Tips for Coding in Page Builder.md` – coding tips, globals (CF_USERID, CF_SPACEID, etc.), CSS scoping, no `<head>`, button behavior, parser quirks (empty `{}`, JSON parser bugs for regex/backslashes, `aspnetForm` wrapper).
+- `Docs/axero_documentation.json` – platform documentation, APIs, and feature reference.
+
+When implementing or debugging **API calls** (REST, cases, content, widgets, etc.):
+- Use `Docs/Axero Postman Collection.postman_collection.json` for endpoints, request shapes, and examples.
+
+Paths are relative to the repo root. Prefer reading these files when answering questions or generating code for Axero.
