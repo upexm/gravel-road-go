@@ -4,6 +4,7 @@
   "description": "Deploy HTML to Axero Page Builder Raw HTML widget — scripts and Cursor skills",
   "private": true,
   "scripts": {
+    "push": "node scripts/push-page.js",
     "axero:setup": "node scripts/setup-axero-env.js",
     "axero:setup-widgets": "node scripts/setup-axero-env.js --widgets-only",
     "axero:push": "node scripts/push-page.js",
