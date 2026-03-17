@@ -196,8 +196,14 @@ async function push() {
   let pageData;
   try {
     const res = await axios.get(getUrl, { headers, params });
-    pageData = res.data.ResponseData ?? res.data;
-    if (!pageData) {
+    let raw = res.data.ResponseData ?? res.data;
+    if (Array.isArray(raw) && raw.length > 0) {
+      const byId = raw.find((p) => (p.ContentID ?? p.PageID ?? p.ID) == pageId);
+      pageData = byId ?? raw[0];
+    } else {
+      pageData = raw;
+    }
+    if (!pageData || typeof pageData !== 'object') {
       console.error('❌ No page data in response');
       process.exit(1);
     }
@@ -207,24 +213,41 @@ async function push() {
     process.exit(1);
   }
 
-  let layoutStr = pageData.widgetLayoutString ?? pageData.WidgetLayoutString;
-  if (layoutStr == null) {
-    console.error('❌ Page has no widgetLayoutString / WidgetLayoutString');
-    process.exit(1);
+  // API may return layout as widgetLayoutString (JSON string) or as Widgets/SavedWidgets tree
+  let layoutRoot = null;
+  const layoutStr =
+    pageData.widgetLayoutString ??
+    pageData.WidgetLayoutString ??
+    pageData.Layout ??
+    pageData.layout ??
+    pageData.LayoutString ??
+    pageData.PageLayoutString;
+
+  if (layoutStr != null) {
+    try {
+      layoutRoot = typeof layoutStr === 'string' ? JSON.parse(layoutStr) : layoutStr;
+    } catch (e) {
+      console.error('❌ Failed to parse widget layout JSON:', e.message);
+      process.exit(1);
+    }
   }
 
-  let layout;
-  try {
-    layout = typeof layoutStr === 'string' ? JSON.parse(layoutStr) : layoutStr;
-  } catch (e) {
-    console.error('❌ Failed to parse widget layout JSON:', e.message);
+  if (layoutRoot == null && Array.isArray(pageData.Widgets)) {
+    layoutRoot = { Widgets: pageData.Widgets };
+  }
+  if (layoutRoot == null && Array.isArray(pageData.SavedWidgets)) {
+    layoutRoot = { Widgets: pageData.SavedWidgets };
+  }
+  if (layoutRoot == null) {
+    const keys = Object.keys(pageData).join(', ');
+    console.error('❌ Page has no widget layout (widgetLayoutString or Widgets/SavedWidgets). Available keys:', keys);
     process.exit(1);
   }
 
   if (envConfig.mode === 'single') {
     const htmlPath = path.join(PROJECT_ROOT, envConfig.htmlFile);
     const html = fs.readFileSync(htmlPath, 'utf8');
-    const updated = findAndUpdateWidget(layout, envConfig.widgetId, html);
+    const updated = findAndUpdateWidget(layoutRoot, envConfig.widgetId, html);
     if (!updated) {
       console.error('❌ Widget', envConfig.widgetId, 'not found in page layout');
       process.exit(1);
@@ -234,7 +257,7 @@ async function push() {
     for (const mapping of envConfig.mappings) {
       const htmlPath = path.join(PROJECT_ROOT, mapping.htmlFile);
       const html = fs.readFileSync(htmlPath, 'utf8');
-      const updated = findAndUpdateWidget(layout, mapping.widgetId, html);
+      const updated = findAndUpdateWidget(layoutRoot, mapping.widgetId, html);
       if (!updated) {
         missingIds.push(mapping.widgetId);
       }
@@ -246,13 +269,12 @@ async function push() {
     }
   }
 
-  const updatedLayoutString = JSON.stringify(layout);
-  const payload = {
-    ...pageData,
-    widgetLayoutString: updatedLayoutString,
-    WidgetLayoutString: updatedLayoutString,
-    StatusID: 1,
-  };
+  const payload = { ...pageData };
+  if (layoutStr != null) {
+    payload.widgetLayoutString = JSON.stringify(layoutRoot);
+    payload.WidgetLayoutString = payload.widgetLayoutString;
+  }
+  if (payload.StatusID === undefined) payload.StatusID = 1;
 
   const putUrl = `${siteUrl}/api/pb/pages/${pageId}`;
   try {
